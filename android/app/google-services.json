@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "847161186758",
+    "project_id": "ekayzone-40adf",
+    "storage_bucket": "ekayzone-40adf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:847161186758:android:26bfe185174f7e10617ac7",
+        "android_client_info": {
+          "package_name": "com.alikaforklift.ekayzone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "847161186758-3gfk22ajti678h5b0jqtq532km4p3loc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.alikaforklift.ekayzone",
+            "certificate_hash": "c50938b711b4a360e047b2c388ad92fa893ceaa4"
+          }
+        },
+        {
+          "client_id": "847161186758-hvjauk0cj8t1usr9kv686hatmsctql88.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.alikaforklift.ekayzone",
+            "certificate_hash": "e57ea48b28d86be665377e8ac23dab62616c6fe4"
+          }
+        },
+        {
+          "client_id": "847161186758-8o33mcusubehcr2fv9sd228fbbnsbb0m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ36uRS8rmwgELtBOCLG01h5dmaPL4toQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "847161186758-6raru0m206r0p1ae3km0v7qt7vjlsrg0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
