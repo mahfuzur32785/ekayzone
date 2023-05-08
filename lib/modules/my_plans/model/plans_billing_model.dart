@@ -8,60 +8,40 @@ class PlansBillingModel {
     required this.orderId,
     required this.transactionId,
     required this.paymentProvider,
-    required this.planId,
-    required this.userId,
+    required this.planType,
     required this.amount,
-    required this.currencySymbol,
-    required this.usdAmount,
     required this.paymentStatus,
     required this.createdAt,
-    required this.updatedAt,
-    required this.plan,
   });
 
   final int id;
-  final String orderId;
   final String transactionId;
+  final String orderId;
   final String paymentProvider;
-  final int planId;
-  final int userId;
-  final String amount;
-  final String currencySymbol;
-  final String usdAmount;
+  final String planType;
   final String paymentStatus;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final PricingModel plan;
+  final String amount;
+  final String createdAt;
 
   PlansBillingModel copyWith({
     int? id,
-    String? orderId,
     String? transactionId,
+    String? orderId,
     String? paymentProvider,
-    int? planId,
-    int? userId,
-    String? amount,
-    String? currencySymbol,
-    String? usdAmount,
+    String? planType,
     String? paymentStatus,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    PricingModel? plan,
+    String? amount,
+    String? createdAt,
   }) =>
       PlansBillingModel(
         id: id ?? this.id,
-        orderId: orderId ?? this.orderId,
         transactionId: transactionId ?? this.transactionId,
+        orderId: orderId ?? this.orderId,
         paymentProvider: paymentProvider ?? this.paymentProvider,
-        planId: planId ?? this.planId,
-        userId: userId ?? this.userId,
-        amount: amount ?? this.amount,
-        currencySymbol: currencySymbol ?? this.currencySymbol,
-        usdAmount: usdAmount ?? this.usdAmount,
+        planType: planType ?? this.planType,
         paymentStatus: paymentStatus ?? this.paymentStatus,
+        amount: amount ?? this.amount,
         createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        plan: plan ?? this.plan,
       );
 
   factory PlansBillingModel.fromJson(String str) => PlansBillingModel.fromMap(json.decode(str));
@@ -70,33 +50,23 @@ class PlansBillingModel {
 
   factory PlansBillingModel.fromMap(Map<String, dynamic> json) => PlansBillingModel(
     id: json["id"],
-    orderId: json["order_id"],
     transactionId: json["transaction_id"],
+    orderId: json["order_id"],
     paymentProvider: json["payment_provider"],
-    planId: json["plan_id"],
-    userId: json["user_id"],
-    amount: json["amount"],
-    currencySymbol: json["currency_symbol"],
-    usdAmount: json["usd_amount"],
+    planType: json["plan_type"],
     paymentStatus: json["payment_status"],
-    createdAt: DateTime.parse(json["created_at"]),
-    updatedAt: DateTime.parse(json["updated_at"]),
-    plan: PricingModel.fromMap(json["plan"]),
+    amount: json["amount"],
+    createdAt: json["created_at"],
   );
 
   Map<String, dynamic> toMap() => {
     "id": id,
-    "order_id": orderId,
     "transaction_id": transactionId,
+    "order_id": orderId,
     "payment_provider": paymentProvider,
-    "plan_id": planId,
-    "user_id": userId,
-    "amount": amount,
-    "currency_symbol": currencySymbol,
-    "usd_amount": usdAmount,
+    "plan_type": planType,
     "payment_status": paymentStatus,
-    "created_at": createdAt.toIso8601String(),
-    "updated_at": updatedAt.toIso8601String(),
-    "plan": plan.toMap(),
+    "amount": amount,
+    "created_at": createdAt,
   };
 }

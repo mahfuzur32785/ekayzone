@@ -1,6 +1,10 @@
 import 'dart:developer';
+import 'package:ekayzone/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../core/router_name.dart';
 import '../../utils/constants.dart';
 import '../../utils/k_images.dart';
@@ -48,17 +52,61 @@ class SplashScreenState extends State<AnimatedSplashScreen>
     final loginBloc = context.read<LoginBloc>();
     return Scaffold(
       body: BlocConsumer<AppSettingCubit, AppSettingState>(
-        listener: (context, state) {
-          // log("listener $state", name: _className);
+        listener: (context, state) async {
           if (state is AppSettingStateLoaded) {
-            if (loginBloc.isLoggedIn) {
-              Navigator.pushReplacementNamed(context, RouteNames.mainPage);
-            } else if (appSettingBloc.isOnBoardingShown) {
-              // Navigator.pushReplacementNamed(context, RouteNames.authenticationScreen);
-              Navigator.pushReplacementNamed(context, RouteNames.mainPage);
-            } else {
-              Navigator.pushReplacementNamed(context, RouteNames.mainPage);
-              // Navigator.pushReplacementNamed(context, RouteNames.onBoardingScreen);
+            bool serviceEnabled;
+            LocationPermission permission;
+
+            serviceEnabled = await Geolocator.isLocationServiceEnabled();
+            if (!serviceEnabled) {
+              Utils.toastMsg('Location services are disabled.');
+            }
+
+            permission = await Geolocator.checkPermission();
+            if (permission == LocationPermission.denied) {
+              permission = await Geolocator.requestPermission();
+              if (permission == LocationPermission.denied) {
+                Utils.toastMsg('Location permission is required');
+                if (loginBloc.isLoggedIn) {
+                  Navigator.pushReplacementNamed(context, RouteNames.mainPage);
+                } else if (appSettingBloc.isOnBoardingShown) {
+                  // Navigator.pushReplacementNamed(context, RouteNames.authenticationScreen);
+                  Navigator.pushReplacementNamed(context, RouteNames.mainPage);
+                } else {
+                  Navigator.pushReplacementNamed(context, RouteNames.mainPage);
+                  // Navigator.pushReplacementNamed(context, RouteNames.onBoardingScreen);
+                }
+              }
+            }
+            if (permission == LocationPermission.deniedForever) {
+              await openAppSettings();
+              Utils.toastMsg('Location permission is required');
+              if (loginBloc.isLoggedIn) {
+                Navigator.pushReplacementNamed(context, RouteNames.mainPage);
+              } else if (appSettingBloc.isOnBoardingShown) {
+                // Navigator.pushReplacementNamed(context, RouteNames.authenticationScreen);
+                Navigator.pushReplacementNamed(context, RouteNames.mainPage);
+              } else {
+                Navigator.pushReplacementNamed(context, RouteNames.mainPage);
+                // Navigator.pushReplacementNamed(context, RouteNames.onBoardingScreen);
+              }
+            }
+            else{
+              var location = await Geolocator.getCurrentPosition();
+              List<Placemark> placemarks =
+              await placemarkFromCoordinates(location.latitude, location.longitude);
+              appSettingBloc.location = placemarks[0].isoCountryCode!;
+              print("Current Location ${appSettingBloc.location}");
+
+              if (loginBloc.isLoggedIn) {
+                Navigator.pushReplacementNamed(context, RouteNames.mainPage);
+              } else if (appSettingBloc.isOnBoardingShown) {
+                // Navigator.pushReplacementNamed(context, RouteNames.authenticationScreen);
+                Navigator.pushReplacementNamed(context, RouteNames.mainPage);
+              } else {
+                Navigator.pushReplacementNamed(context, RouteNames.mainPage);
+                // Navigator.pushReplacementNamed(context, RouteNames.onBoardingScreen);
+              }
             }
           }
         },

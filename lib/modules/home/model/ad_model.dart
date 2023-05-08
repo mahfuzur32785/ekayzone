@@ -110,7 +110,7 @@ class AdModel extends Equatable {
     price: json["price"] ?? '',
     featured: json["featured"] ?? '',
     city: json["city"] ?? '',
-    isWished: json["wishlisted"] ?? true,
+    isWished: json["wishlisted"] ?? false,
     region: json["region"] ?? '',
     country: json["country"] ?? '',
     address: json["address"] ?? '',
@@ -211,7 +211,7 @@ class Gallery extends Equatable{
   String toJson() => json.encode(toMap());
 
   factory Gallery.fromMap(Map<String, dynamic> json) => Gallery(
-    id: json["id"] ?? 0,
+    id: json["id"] is String ? int.parse(json["id"]) : json["id"] ?? 0,
     adId: json["ad_id"] ?? '',
     image: json["image"] ?? '',
     imageUrl: json["image_url"] ?? '',
@@ -267,7 +267,7 @@ class AdFeature extends Equatable{
   String toJson() => json.encode(toMap());
 
   factory AdFeature.fromMap(Map<String, dynamic> json) => AdFeature(
-    id: json["id"] ?? 0,
+    id: json["id"] is String ? int.parse(json["id"]) : json["id"] ?? 0,
     adId: json["ad_id"] is String ? (json["ad_id"].toString()) : json['ad_id'] ?? 0,
     name: json["name"] ?? '',
   );

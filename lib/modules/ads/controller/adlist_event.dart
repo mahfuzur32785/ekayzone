@@ -18,10 +18,11 @@ class SearchAdsEventSearch extends SearchAdsEvent {
   final String subCategory;
   final String locationSearchValue;
   final String distanceValue;
-  const SearchAdsEventSearch(this.search, this.priceMin, this.priceMax, this.paginate, this.shortBy, this.filterBy, this.category, this.subCategory, this.distanceValue, this.locationSearchValue);
+  final String countryCode;
+  const SearchAdsEventSearch(this.search, this.priceMin, this.priceMax, this.paginate, this.shortBy, this.filterBy, this.category, this.subCategory, this.distanceValue, this.locationSearchValue, this.countryCode);
 
   @override
-  List<Object> get props => [search,priceMin,priceMax,paginate,shortBy,filterBy,category,subCategory, locationSearchValue, distanceValue];
+  List<Object> get props => [search,priceMin,priceMax,paginate,shortBy,filterBy,category,subCategory, locationSearchValue, distanceValue, countryCode];
 }
 
 class SearchAdsEventLoadMore extends SearchAdsEvent {

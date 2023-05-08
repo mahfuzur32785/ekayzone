@@ -33,7 +33,7 @@ class _PublicProfileState extends State<PublicProfile> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => context.read<PublicProfileCubit>().getPublicProfile(widget.username));
+    Future.microtask(() => context.read<PublicProfileCubit>().getPublicProfile(widget.username, ''));
   }
 
 
@@ -502,7 +502,7 @@ class _PublicProfileState extends State<PublicProfile> {
                                                           reviewController.text = '';
                                                           rating = -1;
                                                           Utils.showSnackBar(context, r);
-                                                          bloc.getPublicProfile(widget.username);
+                                                          bloc.getPublicProfile(widget.username, '');
                                                         });
                                                       } else {
                                                         Utils.showSnackBar(context, "Give Rating and write review");

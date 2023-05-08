@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ekayzone/modules/animated_splash/controller/app_setting_cubit.dart';
+import 'package:ekayzone/modules/home/controller/cubit/home_controller_cubit.dart';
 import 'package:ekayzone/modules/home/model/model_model.dart';
 import 'package:ekayzone/modules/home/model/pricing_model.dart';
 import 'package:ekayzone/modules/new_post_ad/component/category_fileds/education_feild.dart';
@@ -26,6 +28,8 @@ import 'category_fileds/mobile_phones.dart';
 import 'category_fileds/property.dart';
 import 'category_fileds/service_field.dart';
 import 'category_fileds/vehicles.dart';
+
+import 'package:http/http.dart' as http;
 
 class NewBasicInfoView extends StatefulWidget {
   const NewBasicInfoView({Key? key}) : super(key: key);
@@ -174,14 +178,15 @@ class _NewBasicInfoViewState extends State<NewBasicInfoView> {
                             controller: postAdBloc
                                 .locationController,
                             decoration: const InputDecoration(
-                                labelText: 'Your Location')),
+                                hintText: 'Your Location')),
                         suggestionsCallback: (pattern) async {
-                          await getPlaces(pattern);
+                          await getPlaces(pattern,
+                              context.read<HomeControllerCubit>().updatedCountry.toString().isEmpty ? context.read<AppSettingCubit>().defaultLocation.toString() : context.read<HomeControllerCubit>().updatedCountry);
                           // getPlaces(pattern).then((value) {
                           //   placesSearchResult = value;
                           // });
                           return placesSearchResult
-                              .where((element) => element.name
+                              .where((element) => element.description!
                               .toLowerCase()
                               .contains(pattern
                               .toString()
@@ -192,7 +197,7 @@ class _NewBasicInfoViewState extends State<NewBasicInfoView> {
                         },
                         itemBuilder: (context, suggestion) {
                           return ListTile(
-                            title: Text(suggestion.name),
+                            title: Text("${suggestion.description.toString().trim()}"),
                           );
                         },
                         transitionBuilder:
@@ -200,10 +205,12 @@ class _NewBasicInfoViewState extends State<NewBasicInfoView> {
                           return suggestionsBox;
                         },
                         onSuggestionSelected:
-                            (PlacesSearchResult suggestion) {
-                          postAdBloc.add(NewPostAdEventLocation(suggestion.name));
-                          print('Lat & Lang is: ${suggestion.geometry?.location.lat} ${suggestion.geometry?.location.lng}');
-                          postAdBloc.add(NewPostAdEventLatLng('${suggestion.geometry?.location.lat}', '${suggestion.geometry?.location.lng}'));
+                            (Prediction suggestion) async {
+                              postAdBloc.add(NewPostAdEventLocation(suggestion.description.toString().trim().substring(0, suggestion.description.toString().trim().indexOf(','))));
+                              final location = await getLocation(suggestion.description.toString().trim().substring(0, suggestion.description.toString().trim().indexOf(',')), 'locality', "AIzaSyCGYnCh2Uusd7iASDhsUCxvbFgkSifkkTM");
+
+                              print('Lat & Lang is: ${location['lat']} ${location['lng']}');
+                          postAdBloc.add(NewPostAdEventLatLng("${location['lat']}", "${location['lat']}"));
                         },
                         // validator: (value) {
                         //   if (postAdBloc.state.location ==
@@ -772,19 +779,19 @@ class _NewBasicInfoViewState extends State<NewBasicInfoView> {
   }
 
   ///......... Location search ................
-  List<PlacesSearchResult> placesSearchResult = [];
+  List<Prediction> placesSearchResult = [];
   static const kGoogleApiKey = "AIzaSyCGYnCh2Uusd7iASDhsUCxvbFgkSifkkTM";
   // static const kGoogleApiKey = "AIzaSyA72zy8Wy4kFpom_brg28OqBOa8S0eXXGY";
   final places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
   late PlacesSearchResponse response;
-  Future<List<PlacesSearchResult>> getPlaces(text) async {
-    await places.searchByText(text).then((value) {
-      print(value.status);
-      placesSearchResult = value.results;
-      print("${value.results.length}");
-      if (value.results.isNotEmpty) {
-        print(value.results.map((e) => e.name.log()));
-        placesSearchResult = value.results;
+  Future<List<Prediction>> getPlaces(text, countryCode) async {
+    await places.autocomplete(text, types: ['locality'],components: [Component(Component.country, countryCode.toString())], radius: 1000).then((value) {
+      print("Values are ${value.status}");
+      placesSearchResult = value.predictions;
+      print("${value.predictions.length}");
+      if (value.predictions.isNotEmpty) {
+        print(value.predictions.map((e) => e.description!.log()));
+        placesSearchResult = value.predictions;
       }
     });
 
@@ -844,4 +851,16 @@ class _NewBasicInfoViewState extends State<NewBasicInfoView> {
       return base64Images;
     }
   }
+
+  Future<Map<String, dynamic>> getLocation(String query, String placeType, String apiKey) async {
+    final url = Uri.https('maps.googleapis.com', '/maps/api/place/textsearch/json', {
+      'query': query,
+      'type': placeType,
+      'key': apiKey,
+    });
+    final response = await http.get(url);
+    final body = json.decode(response.body);
+    return body['results'][0]['geometry']['location'];
+  }
+
 }

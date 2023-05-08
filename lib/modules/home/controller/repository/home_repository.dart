@@ -5,7 +5,7 @@ import '../../../../core/error/failure.dart';
 import '../../model/home_model.dart';
 
 abstract class HomeRepository {
-  Future<Either<Failure, HomeModel>> getHomeData();
+  Future<Either<Failure, HomeModel>> getHomeData(String countryCode);
 }
 
 class HomeRepositoryImp extends HomeRepository {
@@ -13,9 +13,9 @@ class HomeRepositoryImp extends HomeRepository {
   HomeRepositoryImp({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, HomeModel>> getHomeData() async {
+  Future<Either<Failure, HomeModel>> getHomeData(String countryCode) async {
     try {
-      final result = await remoteDataSource.getHomeData();
+      final result = await remoteDataSource.getHomeData(countryCode);
       return right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));

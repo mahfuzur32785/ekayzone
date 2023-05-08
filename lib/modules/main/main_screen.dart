@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:ekayzone/modules/animated_splash/controller/app_setting_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ekayzone/Localization/controller/locale_cubit.dart';
@@ -41,7 +42,8 @@ class _MainScreenState extends State<MainScreen> {
       // BlocProvider.of<LocaleCubit>(context).toEnglish();
       context.read<LanguageCubit>().getLanguages();
       context.read<LoginBloc>().add(const LoginEventCheckProfile());
-      context.read<HomeControllerCubit>().getHomeData();
+      print("Current Location ${context.read<AppSettingCubit>().location} Default Location ${context.read<AppSettingCubit>().defaultLocation.toString()}");
+      context.read<HomeControllerCubit>().getHomeData(context.read<AppSettingCubit>().location.isEmpty ? context.read<AppSettingCubit>().defaultLocation.toString() :  context.read<AppSettingCubit>().location);
     });
 
     pageList = [

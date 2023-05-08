@@ -34,7 +34,7 @@ class _MyShopScreenState extends State<MyShopScreen> {
   void initState() {
     super.initState();
     Future.microtask(() =>
-        context.read<PublicProfileCubit>().getPublicProfile(widget.username));
+        context.read<PublicProfileCubit>().getPublicProfile(widget.username, ''));
   }
 
   @override
@@ -261,15 +261,16 @@ class _MyShopScreenState extends State<MyShopScreen> {
                                                       onChanged:
                                                           (dynamic value) {
                                                         selectedValue = value;
+                                                        bloc.getPublicProfile(widget.username, selectedValue);
                                                         print(selectedValue);
                                                         setState(() {});
                                                       },
                                                       value: selectedValue,
                                                       items: myItemSortListData
                                                           .map((location) {
-                                                        return DropdownMenuItem(
-                                                          value: location,
-                                                          child: Text(location),
+                                                        return DropdownMenuItem<String>(
+                                                          value: location['value'],
+                                                          child: Text("${location['name']}"),
                                                         );
                                                       }).toList(),
                                                     ),
@@ -534,7 +535,7 @@ class _MyShopScreenState extends State<MyShopScreen> {
                                                   reviewController.text = '';
                                                   ratings = -1;
                                                   Utils.showSnackBar(context, r);
-                                                  bloc.getPublicProfile(widget.username);
+                                                  bloc.getPublicProfile(widget.username, '');
                                                 });
                                               } else {
                                                 Utils.showSnackBar(context, "Give Rating and write review");
@@ -543,7 +544,6 @@ class _MyShopScreenState extends State<MyShopScreen> {
                                               Utils.openSignInDialog(context);
                                             }
                                           },
-                                          child: const Text('Save'),
                                           style: ElevatedButton.styleFrom(
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -552,6 +552,7 @@ class _MyShopScreenState extends State<MyShopScreen> {
                                               backgroundColor:
                                                   const Color(0xFF212d6e),
                                               foregroundColor: Colors.white),
+                                          child: const Text('Save'),
                                         ),
                                       )
                                     ],

@@ -192,7 +192,7 @@ class _ProductCardState extends State<ProductCard> {
                 fit: BoxFit.cover),
           ),
           // _buildOfferInPercentage(),
-          widget.from=='home'||widget.from=='public_shop' ? Container() : Positioned(
+          widget.from=='home'||widget.from=='public_shop'||widget.from=='ads_screen' ? Container() : Positioned(
             top: 8,
             left: 8,
             child:

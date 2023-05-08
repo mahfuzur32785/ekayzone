@@ -42,20 +42,19 @@ class SearchAdsBloc extends Bloc<SearchAdsEvent,SearchAdsState> {
     emit(const SearchAdsStateLoading());
     final uri = Uri.parse(RemoteUrls.searchAds).replace(
       queryParameters: {
-        // 'keyword': event.search,
-        // 'price_min': '${rangeValues.start.round()}',
-        // 'price_max': '${rangeValues.end.round()}',
-        // 'paginate': '10',
-        // 'filter_by': '',
-        // 'sort_by': sortingText,
+        'search': event.search,
+        'price_min': event.priceMin,
+        'price_max': event.priceMin,
+        'paginate': '10',
+        'location': event.locationSearchValue,
+        'km': event.distanceValue,
+        'sort_by': event.shortBy,
         'category': event.category,
+        'country_code': event.countryCode
         // 'subcategory': event.subCategory,
       },
     );
-
-    if (kDebugMode) {
-      print(uri);
-    }
+    print("Filtering url is: $uri");
 
     final result = await _searchAdsRepository.searchAds(uri);
 

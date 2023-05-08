@@ -59,7 +59,23 @@ final gradientColors = [
 ];
 
 final myItemSortListData = [
-  "New Listings", "Old Listings", "Price: Low to High", "Price: High to Low"
+  {
+    "name": "New Listings",
+    "value": "latest"
+  },
+  {
+    "name": "Old Listings",
+    "value": "oldest"
+  },
+  {
+    "name": "Price: Low to High",
+    "value": "low_to_high"
+  },
+  {
+    "name": "Price: High to Low",
+    "value": "high_to_low"
+  },
+
 ];
 
 final countryListData = [
@@ -67,7 +83,30 @@ final countryListData = [
 ];
 
 final dropDownListData = [
-  "+5km", "+10km", "+15km", "+20km"
+  {
+    "title": "+5km",
+    "value": "5"
+  },
+  {
+  "title": "+10km",
+  "value": "10"
+  },
+  {
+  "title": "+15km",
+  "value": "15"
+  },
+  {
+  "title": "+30km",
+  "value": "30"
+  },
+  {
+  "title": "+50km",
+  "value": "50"
+  },
+  {
+  "title": "+150km",
+  "value": "150"
+  },
 ];
 
 final scrollTabList = [

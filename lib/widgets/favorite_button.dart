@@ -20,9 +20,9 @@ class _FavoriteButtonState extends State<FavoriteButton> {
 
   @override
   Widget build(BuildContext context) {
-    print("id : ${widget.productId}/ value : ${widget.isFav}");
+    // print("id : ${widget.productId} & value : ${widget.isFav}");
     return Visibility(
-      visible: Utils.isShowFavorite(context),
+      visible: true,
       child: InkWell(
         onTap: () async {
           final result =

@@ -1,3 +1,4 @@
+import 'package:ekayzone/modules/animated_splash/controller/app_setting_cubit.dart';
 import 'package:ekayzone/modules/home/home_screen.dart';
 import 'package:ekayzone/modules/profile/controller/public_profile/public_profile_cubit.dart';
 import 'package:flutter/foundation.dart';
@@ -44,7 +45,7 @@ class _AdDetailsScreenState extends State<AdDetailsScreen> {
     }
     super.initState();
     Future.microtask(
-        () => context.read<AdDetailsCubit>().getAdDetails(widget.slug, true));
+        () => context.read<AdDetailsCubit>().getAdDetails(widget.slug, true, context.read<AppSettingCubit>().location.isEmpty ? context.read<AppSettingCubit>().defaultLocation.toString() :  context.read<AppSettingCubit>().location));
   }
 
   @override
@@ -235,7 +236,8 @@ class _AdDetailsScreenState extends State<AdDetailsScreen> {
                           child: ElevatedButton.icon(
                             onPressed: () {
                               if (userData != null) {
-                                if(bloc.isMe(userData.user.id)){
+                                if(bloc.isMe(state.adDetailsResponseModel
+                                    .adDetails.customer?.id)){
                                   Utils.showSnackBar(context, "You can not message with yourself");
                                   return;
                                 } else {

@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:ekayzone/modules/home/model/country_model.dart';
 import 'package:ekayzone/modules/setting/model/setting_model.dart';
 
 import '../../../../core/data/datasources/local_data_source.dart';
@@ -8,6 +9,7 @@ import '../../../../core/error/failure.dart';
 
 abstract class AppSettingRepository {
   Future<Either<Failure, SettingModel>> websiteSetup();
+  Future<Either<Failure, List<TopCountry>>> getCountry();
   Either<Failure, SettingModel> getCachedWebsiteSetup();
 
   Either<Failure, bool> checkOnBoarding();
@@ -47,6 +49,16 @@ class AppSettingRepositoryImp extends AppSettingRepository {
     try {
       final result = await remoteDataSource.websiteSetup();
       localDataSource.cacheWebsiteSetting(result);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, e.statusCode));
+    }
+  }
+  @override
+  Future<Either<Failure, List<TopCountry>>> getCountry() async {
+    try {
+      final result = await remoteDataSource.getCountry();
+      // localDataSource.cacheCountryData(result);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));

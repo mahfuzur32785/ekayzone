@@ -1,6 +1,10 @@
+import 'package:ekayzone/modules/ads/controller/adlist_bloc.dart';
+import 'package:ekayzone/utils/constants.dart';
+import 'package:ekayzone/widgets/custom_textfeild.dart';
 import 'package:flutter/material.dart';
 import 'package:ekayzone/modules/home/component/product_card.dart';
 import 'package:ekayzone/modules/home/model/ad_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import '../../../Localization/app_localizations.dart';
 import '../../../utils/k_images.dart';
@@ -10,10 +14,9 @@ import '../model/product_model.dart';
 class GridProductContainer2 extends StatefulWidget {
   const GridProductContainer2({
     Key? key,
-    required this.adModelList, required this.title, required this.onPressed,
+    required this.adModelList, required this.onPressed,
   }) : super(key: key);
   final List<AdModel> adModelList;
-  final String title;
   final Function onPressed;
 
   @override
@@ -23,28 +26,12 @@ class GridProductContainer2 extends StatefulWidget {
 class GridProductContainer2State extends State<GridProductContainer2> {
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                widget.title,
-                style:
-                const TextStyle(fontSize: 18, height: 1.5, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox()
-            ],
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 20),
           LayoutBuilder(
             builder: (context,constraints){
               if (widget.adModelList.isNotEmpty) {
@@ -58,7 +45,7 @@ class GridProductContainer2State extends State<GridProductContainer2> {
                     mainAxisExtent: 300,
                   ),
                   itemBuilder: (context,index){
-                    return ProductCard(adModel: widget.adModelList[index]);
+                    return ProductCard(adModel: widget.adModelList[index],from: 'ads_screen',);
                   },
                   itemCount: widget.adModelList.length,
                 );
@@ -73,7 +60,7 @@ class GridProductContainer2State extends State<GridProductContainer2> {
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(color: Colors.black54)
                         ),
-                        child: Text("${AppLocalizations.of(context).translate('ads')} ${AppLocalizations.of(context).translate('not_found_title')}",style: TextStyle(color: Colors.black54,fontSize: 16,fontWeight: FontWeight.w500),)),
+                        child: Text("${AppLocalizations.of(context).translate('ads')} ${AppLocalizations.of(context).translate('not_found_title')}",style: const TextStyle(color: Colors.black54,fontSize: 16,fontWeight: FontWeight.w500),)),
                   ),
                 );
               }

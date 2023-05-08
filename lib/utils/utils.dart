@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -445,6 +446,19 @@ class Utils {
     );
   }
 
+  //............ Toast Message ............
+  static void toastMsg(String msg){
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.grey.withOpacity(0.7),
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+  }
+
   static String orderStatus(String orderStatus) {
     switch (orderStatus) {
       case '0':
@@ -453,10 +467,8 @@ class Utils {
         return 'Progress';
       case '2':
         return 'Delivered';
-      case '3':
+      case 'paid':
         return 'Completed';
-    // case '4':
-    //   return 'Declined';
       default:
         return 'Declined';
     }

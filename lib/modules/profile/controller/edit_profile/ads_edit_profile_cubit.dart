@@ -52,7 +52,7 @@ class AdEditProfileCubit extends Cubit<EditProfileState> {
 
     print("Username: $username");
 
-    final result = await profileRepository.publicProfile(username);
+    final result = await profileRepository.publicProfile(username, '');
 
     result.fold(
           (failure) {

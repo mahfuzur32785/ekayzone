@@ -4,6 +4,7 @@ import 'dart:core';
 
 import 'package:ekayzone/core/remote_urls.dart';
 import 'package:ekayzone/core/router_name.dart';
+import 'package:ekayzone/modules/animated_splash/controller/app_setting_cubit.dart';
 import 'package:ekayzone/modules/home/component/top_ads_slider.dart';
 import 'package:ekayzone/modules/main/main_controller.dart';
 import 'package:ekayzone/utils/extensions.dart';
@@ -48,10 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final double height = 114;
 
-  TextEditingController searchController = TextEditingController();
-  TextEditingController locationController = TextEditingController();
-
-  var selectedCategory;
+  var currentCountryCode;
   var selectedCity;
 
   String? selected;
@@ -66,6 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
     categoryBloc = context.read<CategoryBloc>();
+    context.read<HomeControllerCubit>().updatedCountry.isEmpty ? context.read<HomeControllerCubit>().updatedCountry = context.read<AppSettingCubit>().location : null;
+    print("update country code: ${context.read<HomeControllerCubit>().updatedCountry}");
   }
 
   @override
@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 10),
                   IconButton(
                     onPressed: () {
-                      context.read<HomeControllerCubit>().getHomeData();
+                      context.read<HomeControllerCubit>().getHomeData(context.read<AppSettingCubit>().location.isEmpty ? context.read<AppSettingCubit>().defaultLocation.toString() :  context.read<AppSettingCubit>().location);
                     },
                     icon: const Icon(Icons.refresh_outlined),
                   ),
@@ -101,7 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           if (state is HomeControllerLoaded) {
             return Scaffold(
-              backgroundColor: const Color(0xFFF6F7FE),
               appBar: AppBar(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black87,
@@ -114,25 +113,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 actions: [
                   SizedBox(
                     height: 55,
-                    width: 150,
+                    width: 170,
                     child: PopupMenuButton(
                       icon: Material(
                         borderRadius: BorderRadius.circular(3),
                         color: Colors.grey.shade300,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 8),
                           child: Text(context.read<HomeControllerCubit>().country),
                         ),
                       ),
+                      tooltip: "Select Country",
                       itemBuilder: (context) => <PopupMenuEntry>[
                         ...List.generate(state.homeModel.topCountries.length, (countryIndex) {
                           // print("Length ${state.homeModel.topCountries.length}");
                           return PopupMenuItem(
                             onTap: (){
-                              context.read<HomeControllerCubit>().getUpdateCountry(state.homeModel.topCountries[countryIndex].country);
-
+                              context.read<HomeControllerCubit>().updatedCountry = context.read<AppSettingCubit>().location = state.homeModel.topCountries[countryIndex].iso;
+                              print("update country code: ${context.read<HomeControllerCubit>().updatedCountry}");
+                              context.read<HomeControllerCubit>().getHomeData(context.read<HomeControllerCubit>().updatedCountry);
+                              context.read<HomeControllerCubit>().country = state.homeModel.topCountries[countryIndex].nicename;
                             },
-                            child: Text(state.homeModel.topCountries[countryIndex].country),
+                            child: Text(state.homeModel.topCountries[countryIndex].nicename),
                           );
                         }),
                       ],
@@ -201,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),*/
 
-                  // SEARCH, FILTER FILED
+                  /// SEARCH, FILTER FILED
                   SliverToBoxAdapter(
                     child: Container(
                       padding: const EdgeInsets.only(
@@ -249,17 +251,20 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             CstmTextFeild(
                               isObsecure: false,
-                              controller: searchController,
+                              controller: context.read<HomeControllerCubit>().searchController,
                               hintext: "What are you looking for?",
                             ),
                             TypeAheadFormField(
                               textFieldConfiguration:
                               TextFieldConfiguration(
-                                  controller: locationController,
+                                  // onChanged: (value){
+                                  //   print("update country code: ${context.read<HomeControllerCubit>().updatedCountry}");
+                                  // },
+                                  controller: context.read<HomeControllerCubit>().locationController,
                                   decoration: const InputDecoration(
-                                      labelText: 'Location')),
+                                      hintText: 'Location')),
                               suggestionsCallback: (pattern) async {
-                                await getPlaces(pattern);
+                                await getPlaces(pattern, context.read<HomeControllerCubit>().updatedCountry.toString().isEmpty ? context.read<AppSettingCubit>().defaultLocation.toString() : context.read<HomeControllerCubit>().updatedCountry);
                                 return placesSearchResult
                                     .where((element) => element.description!
                                     .toLowerCase()
@@ -280,9 +285,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               onSuggestionSelected:
                                   (Prediction suggestion) {
-                                // postAdBloc.add(NewEditAdEventLocation(suggestion.name));
-                                // print('Lat & Lang is: ${suggestion.?.location.lat} ${suggestion.geometry?.location.lng}');
-                                // postAdBloc.add(NewPostAdEventLatLng('${suggestion.geometry?.location.lat}', '${suggestion.geometry?.location.lng}'));
+                                    context.read<HomeControllerCubit>().locationController.text = suggestion.description.toString().trim().substring(0, suggestion.description.toString().trim().indexOf(','));
+                                    setState(() {
+                                      print("Final value ${context.read<HomeControllerCubit>().locationController.text.trim()}");
+
+                                    });
                               },
                               // validator: (value) {
                               //   if (postAdBloc.state.location ==
@@ -313,16 +320,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                   });
                                 },
                                 value: selectedCity,
-                                    items: List.generate(
-                                      dropDownListData.length,
-                                          (index) {
-                                            return DropdownMenuItem(
-                                              value: dropDownListData[index],
-                                              child: Text(dropDownListData[index]),
-                                            );
-                                      },
-                                    ),
-                              )),
+                                    items: dropDownListData.map((location) {
+                                      return DropdownMenuItem<String>(
+                                        value: location['value'],
+                                        child: Text("${location['title']}"),
+                                      );
+                                    }).toList(),
+                                ),
+                              ),
                             ),
                             SizedBox(
                               height: 48,
@@ -330,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onPressed: () {
                                   // mainController.naveListener.sink.add(1);
                                   Navigator.pushNamed(context, RouteNames.adsScreen, arguments: [
-                                      categoryBloc.categorySlug ?? '', searchController.text ?? '', locationController.text ?? '', selectedCity ?? ''
+                                      categoryBloc.categorySlug ?? '', context.read<HomeControllerCubit>().searchController.text ?? '', context.read<HomeControllerCubit>().locationController.text ?? '', selectedCity ?? ''
                                     ],
                                   );
                                 },
@@ -496,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   )
-                  
+
                 ],
               ),
             );
@@ -527,11 +532,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // static const kGoogleApiKey = "AIzaSyA72zy8Wy4kFpom_brg28OqBOa8S0eXXGY";
   final places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
   late PlacesSearchResponse response;
-  final query = 'south africa';
-  final type = ['locality'];
-  final components = [Component(Component.country, 'za')];
-  Future<List<Prediction>> getPlaces(text) async {
-    await places.autocomplete(text, types: type,components: components, radius: 1000,location: Location(lat: -28.910658, lng: 25.194137)).then((value) {
+  Future<List<Prediction>> getPlaces(text, countryCode) async {
+    await places.autocomplete(text, types: ['locality'],components: [Component(Component.country, countryCode.toString())], radius: 1000).then((value) {
       print("Values are ${value.status}");
       placesSearchResult = value.predictions;
       print("${value.predictions.length}");

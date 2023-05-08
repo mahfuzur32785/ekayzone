@@ -8,7 +8,7 @@ class AdDetailsCubit extends Cubit<AdDetailsState>{
   final AdDetailsRepository adDetailsRepository;
   final LoginBloc loginBloc;
 
-  Future<void> getAdDetails(String slug, bool isLoading) async {
+  Future<void> getAdDetails(String slug, bool isLoading, String countryCode) async {
     if (isLoading) {
       emit(const AdDetailsStateLoading());
     }
@@ -18,7 +18,7 @@ class AdDetailsCubit extends Cubit<AdDetailsState>{
       token = '${loginBloc.userInfo?.accessToken}';
     }
 
-    final result = await adDetailsRepository.getAdDetails(slug,token);
+    final result = await adDetailsRepository.getAdDetails(slug,token,countryCode);
     result.fold((error) => emit(AdDetailsStateError(error.message)), (data) => emit(AdDetailsStateLoaded(data)));
   }
 }

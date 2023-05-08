@@ -5,7 +5,7 @@ import 'package:ekayzone/core/error/failure.dart';
 import 'package:ekayzone/modules/ad_details/model/details_response_model.dart';
 
 abstract class AdDetailsRepository {
-  Future<Either<Failure, DetailsResponseModel>> getAdDetails(String slug,String token);
+  Future<Either<Failure, DetailsResponseModel>> getAdDetails(String slug,String token, String countryCode);
 }
 
 class AdDetailsRepositoryImp extends AdDetailsRepository {
@@ -13,9 +13,9 @@ class AdDetailsRepositoryImp extends AdDetailsRepository {
   AdDetailsRepositoryImp({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, DetailsResponseModel>> getAdDetails(String slug,String token) async {
+  Future<Either<Failure, DetailsResponseModel>> getAdDetails(String slug,String token, String countryCode) async {
     try {
-      final result = await remoteDataSource.getAdDetails(slug,token);
+      final result = await remoteDataSource.getAdDetails(slug,token, countryCode);
       return right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));

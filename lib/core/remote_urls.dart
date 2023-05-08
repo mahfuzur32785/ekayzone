@@ -8,7 +8,7 @@ class RemoteUrls {
   static const String rootUrl2 = "https://www.ekayzone.com/";
   static const String baseUrl2 = "${rootUrl2}api/";
 
-  static const String homeUrl = "${baseUrl2}home";
+  static String homeUrl(countryCode) => "${baseUrl2}home?country_code=$countryCode";
   static const String userRegister = '${baseUrl2}auth/register';
   static const String socialLogin = '${baseUrl2}auth/social-login';
   static const String userLogin = '${baseUrl2}auth/login';
@@ -16,7 +16,7 @@ class RemoteUrls {
   static const String postAdCreate = '${baseUrl2}ads';
   static String adUpdate(String id) => '${baseUrl2}ads/$id/update';
   static const String pricingPlan = '${baseUrl}pricing-plans';
-  static const String myPlanBilling = '${baseUrl}customer/transactions';
+  static const String myPlanBilling = '${baseUrl2}customer/recent-invoices';
   static const String paymentGateways = '${baseUrl2}pamentgetways';
   static const String paymentConfirmation = '${baseUrl2}payment-success';
   static const String editProfile = '${baseUrl2}auth/profile';
@@ -46,8 +46,8 @@ class RemoteUrls {
   static String userVerification(String code) =>
       '${baseUrl}user-verification/$code';
   static String userProfile = '${baseUrl2}auth/me';
-  static String publicProfile(String username) =>
-      '${baseUrl2}seller/$username';
+  static String publicProfile(String username, String sortBy) =>
+      '${baseUrl2}seller/$username?sort_by=$sortBy';
   static String dashboardOverview = '${baseUrl2}customer/dashboard-overview';
   static String updateProfile(String token) =>
       '${baseUrl}user/update-profile?token=$token';
@@ -72,10 +72,11 @@ class RemoteUrls {
   static const String contactUs = '${baseUrl}contact-us';
   static const String sendContactMessage = '${baseUrl}contacts/send';
   static const String websiteSetup = '${baseUrl2}settings';
+  static const String getCountry = '${baseUrl2}countries';
   static const String getLanguages = '${baseUrl}lenguage/sync';
   static String getSingleLanguage(String code) => '${baseUrl}lenguage/$code';
-  static String productDetail(String slug) =>
-      '${baseUrl2}ads/$slug';
+  static String productDetail(String slug, String countryCode) =>
+      '${baseUrl2}ads/$slug?country_code=$countryCode';
   static String deleteMyAd(int id) =>
       '${baseUrl2}customer/ads/$id/delete';
   static String address(String token) =>

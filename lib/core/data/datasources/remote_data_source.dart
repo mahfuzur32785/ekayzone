@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:ekayzone/modules/ad_details/model/ad_details_model.dart';
+import 'package:ekayzone/modules/home/model/country_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:ekayzone/modules/home/model/category_model.dart' as CategoroyModel;
 import 'package:http/http.dart' as http;
@@ -52,14 +53,14 @@ import '../../remote_urls.dart';
 abstract class RemoteDataSource {
   Future<UserLoginResponseModel> signIn(Map<String, dynamic> body);
   Future<UserWithCountryResponse> userProfile(String token);
-  Future<PublicProfileModel> publicProfile(String username);
+  Future<PublicProfileModel> publicProfile(String username, String sortBy);
   Future<DOverViewModel> dashboardOverview(String token);
   // Future<String> passwordChange(
   //     ChangePasswordStateModel changePassData, String token);
   // Future<String> profileUpdate(ProfileEditStateModel user, String token);
 
-  Future<HomeModel> getHomeData();
-  Future<DetailsResponseModel> getAdDetails(String slug,String token);
+  Future<HomeModel> getHomeData(countryCode);
+  Future<DetailsResponseModel> getAdDetails(String slug,String token, String countryCode);
   Future<AdListResponseModel> searchAds(Uri uri);
   Future<CustomerAdListResponseModel> customerAds(Uri uri,String token);
   Future<String> deleteMyAd(int id,String token);
@@ -97,6 +98,7 @@ abstract class RemoteDataSource {
   Future<String> activeAccountCodeSubmit(String code);
   Future<String> logOut(String token);
   Future<SettingModel> websiteSetup();
+  Future<List<TopCountry>> getCountry();
   Future<List<LanguageModel>> getLanguages();
   Future<String> userRegister(Map<String, dynamic> userInfo);
   Future<UserLoginResponseModel> socialLogin(Map<String, dynamic> userInfo);
@@ -183,8 +185,10 @@ class RemoteDataSourceImpl extends RemoteDataSource {
   }
 
   @override
-  Future<HomeModel> getHomeData() async {
-    final uri = Uri.parse(RemoteUrls.homeUrl);
+  Future<HomeModel> getHomeData(countryCode) async {
+    final uri = Uri.parse(RemoteUrls.homeUrl(countryCode));
+
+    print('Home Api $uri');
 
     final clientMethod = client.get(
       uri,
@@ -372,8 +376,10 @@ class RemoteDataSourceImpl extends RemoteDataSource {
   }
 
   @override
-  Future<DetailsResponseModel> getAdDetails(String slug,String token) async {
-    final uri = Uri.parse(RemoteUrls.productDetail(slug));
+  Future<DetailsResponseModel> getAdDetails(String slug,String token, String countryCode) async {
+    final uri = Uri.parse(RemoteUrls.productDetail(slug, countryCode));
+
+    print("Details url: $uri");
 
     final clientMethod = client.get(
       uri,
@@ -712,9 +718,9 @@ class RemoteDataSourceImpl extends RemoteDataSource {
   }
 
   @override
-  Future<PublicProfileModel> publicProfile(String username) async {
+  Future<PublicProfileModel> publicProfile(String username, String sortBy) async {
     final headers = {'Accept': 'application/json'};
-    final uri = Uri.parse(RemoteUrls.publicProfile(username));
+    final uri = Uri.parse(RemoteUrls.publicProfile(username, sortBy));
 
     final clientMethod = client.get(uri, headers: headers);
     final responseJsonBody =
@@ -851,6 +857,28 @@ class RemoteDataSourceImpl extends RemoteDataSource {
     print(responseJsonBody['data']);
 
     return SettingModel.fromMap(responseJsonBody['data']);
+  }
+
+  @override
+  Future<List<TopCountry>> getCountry() async {
+    // final uri = Uri.parse(RemoteUrls.websiteSetup);
+    final uri = Uri.parse(RemoteUrls.getCountry);
+
+    final clientMethod = client.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+    final responseJsonBody =
+    await callClientWithCatchException(() => clientMethod);
+
+    print(responseJsonBody['data']);
+
+    if (responseJsonBody["success"] == false) {
+      final errorMsg = responseJsonBody['message'].toString();
+      throw UnauthorisedException(errorMsg, 401);
+    } else {
+      return List<dynamic>.from(responseJsonBody["data"]).map((e) => TopCountry.fromMap(e)).toList();
+    }
   }
 
   @override

@@ -79,6 +79,10 @@ dependencies:
   geocoding: ^2.0.5
   geolocator: ^9.0.2
   permission_handler: ^10.2.0
+  pdf: ^3.9.0
+  open_file_plus: ^3.4.0
+  device_info_plus: ^8.1.0
+  fluttertoast: ^8.1.2
   #--------------------------------
 
   flutter_rating_bar: ^4.0.1

@@ -1,5 +1,7 @@
 import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
+import 'package:ekayzone/modules/animated_splash/controller/app_setting_cubit.dart';
 import 'package:ekayzone/modules/home/model/home_model.dart';
+import 'package:ekayzone/utils/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +9,8 @@ import 'package:ekayzone/modules/ads/controller/adlist_bloc.dart';
 import 'package:ekayzone/modules/category/controller/category_bloc.dart';
 import 'package:ekayzone/modules/home/component/grid_product_container2.dart';
 import 'package:ekayzone/modules/main/main_controller.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:google_maps_webservice/places.dart';
 
 import '../../Localization/app_localizations.dart';
 import '../../core/router_name.dart';
@@ -36,8 +40,10 @@ class _AdsScreenState extends State<AdsScreen> {
   TextEditingController searchController = TextEditingController();
   TextEditingController locationController = TextEditingController();
 
-  var selectedCategory;
   String? selectedCity;
+
+  String? selectedSortingValue;
+
 
   final _scrollController = ScrollController();
 
@@ -48,6 +54,10 @@ class _AdsScreenState extends State<AdsScreen> {
 
   final MainController mainController = MainController();
 
+
+  TextEditingController minPriceController = TextEditingController();
+  TextEditingController maxPriceController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +66,7 @@ class _AdsScreenState extends State<AdsScreen> {
     categoryBloc = context.read<CategoryBloc>();
     print("category : ${categoryBloc.categorySlug},sub-category : ${categoryBloc.subCategorySlug}");
     if (searchAdsBloc.adList.isEmpty) {
-      Future.microtask(() => context.read<SearchAdsBloc>().add(SearchAdsEventSearch("",'','','','','',"${widget.categoryValue}",'','','')));
+      Future.microtask(() => context.read<SearchAdsBloc>().add(SearchAdsEventSearch("${widget.searchValue}",'','','','','',"${widget.categoryValue}",'','${widget.distanceValue}','${widget.locationValue}', context.read<AppSettingCubit>().location.isEmpty ? context.read<AppSettingCubit>().defaultLocation.toString() :  context.read<AppSettingCubit>().location)));
     }
     _init();
 
@@ -113,11 +123,12 @@ class _AdsScreenState extends State<AdsScreen> {
             slivers: [
               AdsAppBar.appBar(context),
 
+              ///Search and Filtering area
               SliverToBoxAdapter(
                 child: Container(
                   padding: const EdgeInsets.only(
                       left: 14, right: 14, top: 14, bottom: 14),
-                  margin: const EdgeInsets.only(bottom: 40),
+                  margin: const EdgeInsets.only(bottom: 20),
                   decoration: const BoxDecoration(
                     color: Color(0XFFF7E7F3),
                   ),
@@ -164,10 +175,50 @@ class _AdsScreenState extends State<AdsScreen> {
                           controller: searchController,
                           hintext: "What are you looking for?",
                         ),
-                        CstmTextFeild(
-                          isObsecure: false,
-                          controller: locationController,
-                          hintext: "Location",
+                        TypeAheadFormField(
+                          textFieldConfiguration:
+                          TextFieldConfiguration(
+                              controller: locationController,
+                              decoration: const InputDecoration(
+                                  hintText: 'Location')),
+                          suggestionsCallback: (pattern) async {
+                            await getPlaces(pattern,
+                                context.read<HomeControllerCubit>().updatedCountry.toString().isEmpty ? context.read<AppSettingCubit>().defaultLocation.toString() : context.read<HomeControllerCubit>().updatedCountry);
+                            return placesSearchResult
+                                .where((element) => element.description!
+                                .toLowerCase()
+                                .contains(pattern
+                                .toString()
+                                .toLowerCase()))
+                                .take(10)
+                                .toList();
+                          },
+                          itemBuilder: (context, suggestion) {
+                            return ListTile(
+                              title: Text("${suggestion.description}"),
+                            );
+                          },
+                          transitionBuilder:
+                              (context, suggestionsBox, controller) {
+                            return suggestionsBox;
+                          },
+                          onSuggestionSelected:
+                              (Prediction suggestion) {
+                                // String result = s.substring(0, s.indexOf('.'));
+                                locationController.text = suggestion.description.toString().trim().substring(0, suggestion.description.toString().trim().indexOf(','));
+                                setState(() {
+                                  print("Final value ${locationController.text.trim()}");
+                                });
+                          },
+                          // validator: (value) {
+                          //   if (postAdBloc.state.location ==
+                          //       '') {
+                          //     return 'Enter Your Location';
+                          //   } else {
+                          //     return null;
+                          //   }
+                          // },
+                          onSaved: (value) {},
                         ),
                         Container(
                           color: Colors.white,
@@ -189,9 +240,9 @@ class _AdsScreenState extends State<AdsScreen> {
                                 },
                                 value: selectedCity,
                                 items: dropDownListData.map((location) {
-                                  return DropdownMenuItem(
-                                    value: location,
-                                    child: Text(location),
+                                  return DropdownMenuItem<String>(
+                                    value: location['value'],
+                                    child: Text("${location['title']}"),
                                   );
                                 }).toList(),
                               )),
@@ -201,7 +252,7 @@ class _AdsScreenState extends State<AdsScreen> {
                           child: ElevatedButton(
                             onPressed: () {
                               setState(() {
-                                Future.microtask(() => context.read<SearchAdsBloc>().add(SearchAdsEventSearch(searchController.text,'','','','','',categoryBloc.categorySlug,'','','')));
+                                Future.microtask(() => context.read<SearchAdsBloc>().add(SearchAdsEventSearch(searchController.text.trim(),'','','','','',categoryBloc.categorySlug,'',selectedCity.toString().trim(),locationController.text.trim(),context.read<AppSettingCubit>().location.isEmpty ? context.read<AppSettingCubit>().defaultLocation.toString() :  context.read<AppSettingCubit>().location)));
                               });
                             },
                             style: ElevatedButton.styleFrom(
@@ -218,6 +269,7 @@ class _AdsScreenState extends State<AdsScreen> {
                 ),
               ),
 
+              ///No item found
               SliverToBoxAdapter(
                 child: Visibility(
                   // visible: searchAdsBloc.adList.isEmpty &&
@@ -236,6 +288,110 @@ class _AdsScreenState extends State<AdsScreen> {
                   ),
                 ),
               ),
+
+              /// Custom Price filtering
+              SliverToBoxAdapter(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: CstmTextFeild(
+                            isObsecure: false,
+                            controller: minPriceController,
+                            hintext: "Min",
+                            keyboardType: TextInputType.number,
+                          ),),
+
+                          Expanded(child: CstmTextFeild(
+                            isObsecure: false,
+                            controller: maxPriceController,
+                            hintext: "Max",
+                            keyboardType: TextInputType.number,
+                          ),),
+                          SizedBox(width: 2,),
+                          Expanded(child: SizedBox(
+                            height: 46,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  context.read<SearchAdsBloc>().add(SearchAdsEventSearch("",minPriceController.text,maxPriceController.text,'','','',"",'','','', context.read<AppSettingCubit>().location.isEmpty ? context.read<AppSettingCubit>().defaultLocation.toString() :  context.read<AppSettingCubit>().location));
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  backgroundColor:
+                                  const Color(0xFF212d6e)),
+                              child: const Text("Apply"),
+                            ),
+                          ),),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "${AppLocalizations.of(context).translate('ads')}",
+                            style:
+                            const TextStyle(fontSize: 18, height: 1.5, fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(
+                            width: 50,
+                          ),
+                          Expanded(
+                            child: Container(
+                              height: 40,
+                              padding: const EdgeInsets
+                                  .symmetric(horizontal: 5),
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors
+                                          .grey.shade400),
+                                  borderRadius:
+                                  BorderRadius.circular(
+                                      8)),
+                              child:
+                              DropdownButtonHideUnderline(
+                                child:
+                                DropdownButton<String>(
+                                  hint: const Text(
+                                      'Sort By',
+                                      style: TextStyle(
+                                          color: Colors
+                                              .black)),
+                                  isDense: true,
+                                  isExpanded: true,
+                                  onChanged:
+                                      (dynamic value) {
+                                    selectedSortingValue = value;
+                                    context.read<SearchAdsBloc>().add(SearchAdsEventSearch("",'','','',selectedSortingValue!,'',"",'','','', context.read<AppSettingCubit>().location.isEmpty ? context.read<AppSettingCubit>().defaultLocation.toString() :  context.read<AppSettingCubit>().location));
+                                    print(selectedSortingValue);
+                                    setState(() {});
+                                  },
+                                  value: selectedSortingValue,
+                                  items: myItemSortListData
+                                      .map((location) {
+                                    return DropdownMenuItem<String>(
+                                      value: location['value'],
+                                      child: Text("${location['name']}"),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                ),
+              ),
+
 
               SliverToBoxAdapter(
                   child: BlocConsumer<SearchAdsBloc, SearchAdsState>(
@@ -268,7 +424,6 @@ class _AdsScreenState extends State<AdsScreen> {
                         children: [
                           GridProductContainer2(
                             onPressed: (){},
-                            title: "${AppLocalizations.of(context).translate('ads')}",
                             adModelList: adList,
                           ),
                           Visibility(
@@ -297,4 +452,25 @@ class _AdsScreenState extends State<AdsScreen> {
       ),
     );
   }
+
+  ///......... Location search ................
+  List<Prediction> placesSearchResult = [];
+  static const kGoogleApiKey = "AIzaSyCGYnCh2Uusd7iASDhsUCxvbFgkSifkkTM";
+  // static const kGoogleApiKey = "AIzaSyA72zy8Wy4kFpom_brg28OqBOa8S0eXXGY";
+  final places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
+  late PlacesSearchResponse response;
+  Future<List<Prediction>> getPlaces(text, countryCode) async {
+    await places.autocomplete(text, types: ['locality'],components: [Component(Component.country, countryCode.toString())], radius: 1000).then((value) {
+      print("Values are ${value.status}");
+      placesSearchResult = value.predictions;
+      print("${value.predictions.length}");
+      if (value.predictions.isNotEmpty) {
+        print(value.predictions.map((e) => e.description!.log()));
+        placesSearchResult = value.predictions;
+      }
+    });
+
+    return placesSearchResult;
+  }
+
 }

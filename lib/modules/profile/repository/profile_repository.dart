@@ -15,7 +15,7 @@ import '../controller/change_password/change_password_cubit.dart';
 
 abstract class ProfileRepository {
   Future<Either<Failure, UserWithCountryResponse>> userProfile(String token);
-  Future<Either<Failure, PublicProfileModel>> publicProfile(String username);
+  Future<Either<Failure, PublicProfileModel>> publicProfile(String username, String sortBy);
   Future<Either<Failure, String>> postSellerReview(Map<String, dynamic> body,String seller,String token);
   Future<Either<Failure, DOverViewModel>> dashboardOverview(String token);
   Future<Either<Failure, String>> passwordChange(
@@ -87,9 +87,9 @@ class ProfileRepositoryImp extends ProfileRepository {
 
   @override
   Future<Either<Failure, PublicProfileModel>> publicProfile(
-      String username) async {
+      String username, String sortBy) async {
     try {
-      final result = await remoteDataSource.publicProfile(username);
+      final result = await remoteDataSource.publicProfile(username, sortBy);
       // localDataSource.cacheUserProfile(result.user);
       return Right(result);
     } on ServerException catch (e) {

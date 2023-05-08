@@ -26,7 +26,7 @@ class PublicProfileCubit extends Cubit<PublicProfileState> {
     return false;
   }
 
-  Future<void> getPublicProfile(username) async {
+  Future<void> getPublicProfile(username, sortBy) async {
     // if (_loginBloc.userInfo == null) {
     //   emit(const PublicProfileStateError('Please sign in',401));
     //   return;
@@ -36,7 +36,7 @@ class PublicProfileCubit extends Cubit<PublicProfileState> {
 
     // final username = _loginBloc.userInfo!.user.username;
 
-    final result = await profileRepository.publicProfile(username);
+    final result = await profileRepository.publicProfile(username, sortBy);
 
     result.fold(
           (failure) {
